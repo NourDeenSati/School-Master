@@ -34,7 +34,11 @@ class LoginView extends StatelessWidget {
                     padding: const EdgeInsets.only(bottom: 20.0),
                     child: Text(
                       'School Master',
-                      style: TextStyle(color: Color(0xFF4B70F5), fontSize: 25),
+                      style: TextStyle(
+                        color: Color(0xFF4B70F5),
+                        fontSize: 35,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   SizedBox(
@@ -76,7 +80,7 @@ class LoginView extends StatelessWidget {
                       color: Color(0xFF4B70F5),
                     ),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
                         color: Color(0xFF4B70F5),
                       ),
@@ -129,7 +133,7 @@ class LoginView extends StatelessWidget {
                         ),
                       ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
                           color: Color(0xFF4B70F5),
                         ),
@@ -147,10 +151,28 @@ class LoginView extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: controller.login,
-                child: Text('login'.tr),
+              const SizedBox(height: 40),
+              Align(
+                child: Container(
+                  height: 50,
+                  width: MediaQuery.of(context).size.width * 0.8,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFF4B70F5), // لون الخلفية
+                      foregroundColor:
+                          Color(0xFF4B70F5), // لون تأثير النقر أو النص
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(20), // اختياري: تدوير الزر
+                      ),
+                    ),
+                    onPressed: controller.login,
+                    child: Text(
+                      'login'.tr,
+                      style: TextStyle(fontSize: 25, color: Colors.white),
+                    ),
+                  ),
+                ),
               ),
             ])));
   }
