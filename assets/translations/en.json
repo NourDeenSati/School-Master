@@ -1,0 +1,12 @@
+{
+  "login": "Login",
+  "userName": "UserName",
+  "password": "Password",
+  "do SinIn please" : "SinIn please !",
+  "empty_fields": "Please fill all fields",
+  "invalid_email": "Invalid email address",
+  "wrong_credentials": "Wrong email or password",
+  "user_not_found": "User not found",
+  "unknown_role": "Unknown role",
+  "error": "Error"
+}
