@@ -45,16 +45,21 @@ class LoginView extends StatelessWidget {
                     height: 50,
                   ),
                   Row(
-                    mainAxisAlignment: Get.locale?.languageCode == 'ar'
-                        ? MainAxisAlignment.start
-                        : MainAxisAlignment.end,
+                    // mainAxisAlignment: Get.locale?.languageCode == 'ar'
+                    //     ? MainAxisAlignment.end
+                    //     : MainAxisAlignment.start,
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(right: 20.0),
                         child: Text(
-                          'do sinin please'.tr,
-                          style:
-                              TextStyle(color: Color(0xFF4B70F5), fontSize: 30),
+                          textAlign: Get.locale?.languageCode == 'ar'
+                              ? TextAlign.right
+                              : TextAlign.left,
+                          'do SinIn please'.tr,
+                          style: TextStyle(
+                            color: Color(0xFF4B70F5),
+                            fontSize: 30,
+                          ),
                         ),
                       )
                     ],

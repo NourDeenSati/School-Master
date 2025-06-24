@@ -16,14 +16,28 @@ class LanguageView extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ElevatedButton(
-              onPressed: () => controller.selectLanguage('ar'),
-              child: const Text('العربية'),
+            Container(
+              height: 90,
+              width: 200,
+              child: ElevatedButton(
+                onPressed: () => controller.selectLanguage('ar'),
+                child: const Text(
+                  'العربية',
+                  style: TextStyle(fontSize: 40, color: Color(0xFF4B70F5)),
+                ),
+              ),
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => controller.selectLanguage('en'),
-              child: const Text('English'),
+            Container(
+              height: 90,
+              width: 200,
+              child: ElevatedButton(
+                onPressed: () => controller.selectLanguage('en'),
+                child: const Text(
+                  'English',
+                  style: TextStyle(fontSize: 40, color: Color(0xFF4B70F5)),
+                ),
+              ),
             ),
           ],
         ),

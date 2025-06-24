@@ -1,8 +1,8 @@
 {
   "login": "Login",
-  "userName": "UserName",
+  "userName": "User Name",
   "password": "Password",
-  "do SinIn please" : "SinIn please !",
+  "do SinIn please" : "Sin_In please !",
   "empty_fields": "Please fill all fields",
   "invalid_email": "Invalid email address",
   "wrong_credentials": "Wrong email or password",
