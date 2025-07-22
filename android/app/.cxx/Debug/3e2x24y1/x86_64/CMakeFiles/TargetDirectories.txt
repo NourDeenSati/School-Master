@@ -1,0 +1,2 @@
+I:/ITEProjects/third year/p1/school_master/android/app/.cxx/Debug/3e2x24y1/x86_64/CMakeFiles/edit_cache.dir
+I:/ITEProjects/third year/p1/school_master/android/app/.cxx/Debug/3e2x24y1/x86_64/CMakeFiles/rebuild_cache.dir
