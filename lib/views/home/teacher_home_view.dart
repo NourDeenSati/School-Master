@@ -57,7 +57,7 @@ class _TeacherHomeViewState extends State<TeacherHomeView> {
         return Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
-            backgroundColor: const Color(0xFF4B70F5),
+            // backgroundColor: const Color(0xFF4B70F5),
             title: Text(
               'teacherWelcome'.trParams({
                 'name': '${controller.teacherRes?.teacher.firstName}'

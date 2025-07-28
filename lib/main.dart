@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:school_mangmante/theme/theme.dart';
 import 'core/service/storage_service.dart';
 import 'assets/translations/app_translations.dart';
 import 'views/auth/login_view.dart';
@@ -59,6 +60,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'School Master',
       translations: AppTranslations(),
+        theme: AppTheme.lightTheme,
       locale: locale,
       fallbackLocale: const Locale('ar'),
       home: home,
