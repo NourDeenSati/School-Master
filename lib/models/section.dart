@@ -4,30 +4,36 @@ class Section {
   final int id;
   final String name;
   final String classroom;
-  final TopStudent topByPoints;
-  final TopStudent topByNotes;
-  final TopStudent topByExams;
+  final TopStudent? topByPoints;
+  final TopStudent? topByNotes;
+  final TopStudent? topByExams;
   final int avgExamResult;
 
   Section({
     required this.id,
     required this.name,
     required this.classroom,
-    required this.topByPoints,
-    required this.topByNotes,
-    required this.topByExams,
+    this.topByPoints,
+    this.topByNotes,
+    this.topByExams,
     required this.avgExamResult,
   });
 
   factory Section.fromJson(Map<String, dynamic> json) {
     return Section(
-      id: json['id'],
-      name: json['name'],
-      classroom: json['classroom'],
-      topByPoints: TopStudent.fromJson(json['top_by_points']),
-      topByNotes: TopStudent.fromJson(json['top_by_notes']),
-      topByExams: TopStudent.fromJson(json['top_by_exams']),
-      avgExamResult: json['avg_exam_result'],
+      id: json['id'] ?? 0,
+      name: json['name'] ?? '',
+      classroom: json['classroom'] ?? '',
+      topByPoints: json['top_by_points'] != null
+          ? TopStudent.fromJson(json['top_by_points'])
+          : null,
+      topByNotes: json['top_by_notes'] != null
+          ? TopStudent.fromJson(json['top_by_notes'])
+          : null,
+      topByExams: json['top_by_exams'] != null
+          ? TopStudent.fromJson(json['top_by_exams'])
+          : null,
+      avgExamResult: json['avg_exam_result'] ?? 0,
     );
   }
 }

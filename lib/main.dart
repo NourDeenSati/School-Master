@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:school_mangmante/theme/theme.dart';
+import 'package:school_mangmante/views/repreasantion/teacher_note.dart';
 import 'core/service/storage_service.dart';
 import 'assets/translations/app_translations.dart';
 import 'views/auth/login_view.dart';
@@ -60,10 +61,17 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'School Master',
       translations: AppTranslations(),
-        theme: AppTheme.lightTheme,
+      theme: AppTheme.lightTheme,
       locale: locale,
       fallbackLocale: const Locale('ar'),
       home: home,
+      routes: {
+        // الصفحة الرئيسية
+        '/teacher_note': (context) => TeacherNotesView(),
+        // '/behavior': (context) => BehaviorPage(),
+        // '/recite': (context) => RecitationPage(),
+        // '/attendance': (context) => AttendancePage(),
+      },
     );
   }
 }
