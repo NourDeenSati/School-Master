@@ -1,8 +1,8 @@
-// main.dart
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:school_mangmante/theme/theme.dart';
+import 'package:school_mangmante/views/auth/schedule.dart/schedule_page.dart';
+import 'package:school_mangmante/views/stream/call.dart';
 import 'core/service/storage_service.dart';
 import 'assets/translations/app_translations.dart';
 import 'views/auth/login_view.dart';
@@ -45,7 +45,7 @@ void main() async {
     }
   }
 
-  runApp(MyApp(locale: locale, home: initialPage));
+  runApp(MyApp(locale: locale, home: SchedulePage()));
 }
 
 class MyApp extends StatelessWidget {
