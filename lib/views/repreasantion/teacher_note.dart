@@ -1,0 +1,165 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:school_mangmante/core/controllers/auth/teacer_notes_controller.dart';
+import 'package:school_mangmante/models/studint_Info.dart';
+
+class TeacherNotesView extends StatelessWidget {
+  final TeacherNotesController controller = Get.put(TeacherNotesController());
+
+  @override
+  Widget build(BuildContext context) {
+    final students = (controller.selectedClass.value.isEmpty ||
+            controller.selectedSection.value.isEmpty)
+        ? <StudintInfo>[]
+        : controller.classesData[controller.selectedClass.value]
+                ?.sections[controller.selectedSection.value] ??
+            <StudintInfo>[];
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("add_note".tr),
+        backgroundColor: Color(0xFF4B70F5),
+      ),
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ListView(
+            children: [
+              // اختيار الصف
+              DropdownButtonFormField<String>(
+                decoration: InputDecoration(labelText: "select_class".tr),
+                value: controller.selectedClass.value.isEmpty
+                    ? null
+                    : controller.selectedClass.value,
+                items: controller.classesData.keys.map((className) {
+                  return DropdownMenuItem(
+                    value: className,
+                    child: Text(className),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  controller.selectedClass.value = value ?? "";
+                  controller.selectedSection.value = "";
+                  controller.selectedStudentId.value = 0;
+                },
+              ),
+              SizedBox(height: 16),
+
+              // اختيار الشعبة
+              DropdownButtonFormField<String>(
+                decoration: InputDecoration(labelText: "select_section".tr),
+                value: controller.selectedSection.value.isEmpty
+                    ? null
+                    : controller.selectedSection.value,
+                items: controller.selectedClass.value.isEmpty
+                    ? []
+                    : controller.classesData[controller.selectedClass.value]!
+                        .sections.keys // أسماء الشعب
+                        .map((secName) => DropdownMenuItem(
+                              value: secName,
+                              child: Text(secName),
+                            ))
+                        .toList(),
+                onChanged: (value) {
+                  controller.selectedSection.value = value ?? "";
+                  controller.selectedStudentId.value = 0;
+                },
+              ),
+
+              SizedBox(height: 16),
+
+              DropdownButtonFormField<int>(
+                decoration: InputDecoration(labelText: "select_student".tr),
+                value: controller.selectedStudentId.value == 0
+                    ? null
+                    : controller.selectedStudentId.value,
+                items: students
+                    .map((st) => DropdownMenuItem<int>(
+                          value: st.id,
+                          child: Text("${st.firstName} ${st.lastName}"),
+                        ))
+                    .toList(),
+                onChanged: students.isEmpty
+                    ? null // تعطيل إذا ما في طلاب
+                    : (val) => controller.selectedStudentId.value = val ?? 0,
+                validator: (_) => controller.selectedStudentId.value == 0
+                    ? "student_required".tr
+                    : null,
+              ),
+
+              SizedBox(height: 16),
+
+              // نوع الملاحظة
+              // نوع الملاحظة (Radio Buttons)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("note_type".tr,
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  Obx(() => Row(
+                        children: [
+                          Expanded(
+                            child: RadioListTile<String>(
+                              title: Text("positive_note".tr),
+                              value: "positive",
+                              groupValue: controller.noteType.value,
+                              activeColor: Color(0xFF4B70F5),
+                              onChanged: (value) {
+                                controller.noteType.value = value ?? "positive";
+                              },
+                            ),
+                          ),
+                          Expanded(
+                            child: RadioListTile<String>(
+                              title: Text("negative_note".tr),
+                              value: "negative",
+                              groupValue: controller.noteType.value,
+                              activeColor: Color(0xFF4B70F5),
+                              onChanged: (value) {
+                                controller.noteType.value = value ?? "positive";
+                              },
+                            ),
+                          ),
+                        ],
+                      )),
+                ],
+              ),
+
+              // سبب الملاحظة
+              TextField(
+                decoration: InputDecoration(
+                  labelText: "reason".tr,
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
+                onChanged: (val) => controller.reason.value = val,
+              ),
+              SizedBox(height: 20),
+
+              // زر الإرسال
+              Obx(() {
+                return ElevatedButton(
+                  onPressed: controller.isSending.value
+                      ? null
+                      : () => controller.sendNote(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF4B70F5),
+                    minimumSize: Size(double.infinity, 50),
+                  ),
+                  child: controller.isSending.value
+                      ? CircularProgressIndicator(color: Colors.white)
+                      : Text("send".tr, style: TextStyle(color: Colors.white)),
+                );
+              }),
+            ],
+          ),
+        );
+      }),
+    );
+  }
+}

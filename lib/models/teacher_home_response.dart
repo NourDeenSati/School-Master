@@ -14,10 +14,10 @@ class TeacherHomeResponse {
 
   factory TeacherHomeResponse.fromJson(Map<String, dynamic> json) {
     return TeacherHomeResponse(
-      success: json['success'],
-      teacher: Teacher.fromJson(json['teacher']),
-      sections: (json['sections'] as List)
-          .map((section) => Section.fromJson(section))
+      success: json['success'] ?? false,
+      teacher: Teacher.fromJson(json['teacher'] ?? {}),
+      sections: (json['sections'] as List? ?? [])
+          .map((section) => Section.fromJson(section ?? {}))
           .toList(),
     );
   }

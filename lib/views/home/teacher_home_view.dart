@@ -24,16 +24,17 @@ class _TeacherHomeViewState extends State<TeacherHomeView> {
   }
 
   void startAutoScroll() {
-    sliderTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      if (controller.sections.isNotEmpty) {
-        int nextPage = (currentPage + 1) % controller.sections.length;
-        pageController.animateToPage(
-          nextPage,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
-        );
+    sliderTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (controller.teacherRes != null &&
+          controller.teacherRes!.sections.isNotEmpty) {
         setState(() {
-          currentPage = nextPage;
+          currentPage =
+              (currentPage + 1) % controller.teacherRes!.sections.length;
+          pageController.animateToPage(
+            currentPage,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeIn,
+          );
         });
       }
     });
@@ -54,14 +55,30 @@ class _TeacherHomeViewState extends State<TeacherHomeView> {
           return const Center(child: CircularProgressIndicator());
         }
 
+        if (controller.teacherRes == null) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text("No data available"),
+                ElevatedButton(
+                  onPressed: () => controller.fetchTeacherData(),
+                  child: const Text("Retry"),
+                ),
+              ],
+            ),
+          );
+        }
+
         return Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
             // backgroundColor: const Color(0xFF4B70F5),
             title: Text(
               'teacherWelcome'.trParams({
-                'name': '${controller.teacherRes?.teacher.firstName}'
-                    '${controller.teacherRes?.teacher.lastName}'
+                'name':
+                    '${controller.teacherRes?.teacher.firstName ?? 'لايوجد'}'
+                        '${controller.teacherRes?.teacher.lastName ?? 'لايوجد'}'
               }),
               style: const TextStyle(fontSize: 20, color: Colors.white),
             ),
@@ -87,6 +104,7 @@ class _TeacherHomeViewState extends State<TeacherHomeView> {
           body: Column(
             children: [
               // Slider
+              // Slider
               SizedBox(
                 height: 150,
                 child: PageView.builder(
@@ -96,9 +114,9 @@ class _TeacherHomeViewState extends State<TeacherHomeView> {
                       currentPage = index;
                     });
                   },
-                  itemCount: controller.sections.length,
+                  itemCount: controller.teacherRes!.sections.length,
                   itemBuilder: (context, index) {
-                    final section = controller.sections[index];
+                    final section = controller.teacherRes!.sections[index];
                     final topStudent = section.topByPoints;
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -118,10 +136,10 @@ class _TeacherHomeViewState extends State<TeacherHomeView> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              '${'topByPoints'.tr}: ${topStudent.student.firstName} ${topStudent.student.lastName}',
+                              '${'topByPoints'.tr}: ${topStudent != null ? '${topStudent.student?.firstName} ${topStudent.student?.lastName ?? ''}' : 'لايوجد'}',
                             ),
                             Text(
-                              '${'points'.tr}: ${topStudent.points}',
+                              '${'points'.tr}: ${topStudent?.points ?? 'لايوجد'}',
                             ),
                           ],
                         ),
@@ -135,7 +153,7 @@ class _TeacherHomeViewState extends State<TeacherHomeView> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(
-                  controller.sections.length,
+                  controller.teacherRes!.sections.length,
                   (index) => AnimatedContainer(
                     margin: const EdgeInsets.all(4),
                     duration: const Duration(milliseconds: 300),
@@ -174,7 +192,8 @@ class _TeacherHomeViewState extends State<TeacherHomeView> {
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   children: [
-                    _buildActionItem(Icons.edit_note, 'notes'.tr, '/notes'),
+                    _buildActionItem(
+                        Icons.edit_note, 'notes'.tr, '/teacher_note'),
                     _buildActionItem(Icons.flag, 'behavior'.tr, '/behavior'),
                     _buildActionItem(
                         Icons.menu_book, 'recitation'.tr, '/recite'),
@@ -201,32 +220,30 @@ class _TeacherHomeViewState extends State<TeacherHomeView> {
 
               const SizedBox(height: 8),
 
-              if (controller.sections.isNotEmpty)
+              if (controller.teacherRes!.sections.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                          '${'section'.tr}: ${controller.sections[currentPage].name}'),
+                          '${'section'.tr}: ${controller.teacherRes?.sections[currentPage].name}' ??
+                              'لايوجد'),
                       Text(
-                          '${'classroom'.tr}: ${controller.sections[currentPage].classroom}'),
+                          '${'classroom'.tr}: ${controller.teacherRes?.sections[currentPage].classroom}' ??
+                              'لايوجد'),
                       const SizedBox(height: 8),
                       Text(
-                        '${'topByPoints'.tr}: '
-                        '${controller.sections[currentPage].topByPoints.student.firstName} '
-                        '${controller.sections[currentPage].topByPoints.student.lastName}',
+                        '${'topByPoints'.tr}: ${controller.teacherRes!.sections[currentPage].topByPoints != null ? '${controller.teacherRes!.sections[currentPage].topByPoints!.student?.firstName} ${controller.teacherRes!.sections[currentPage].topByPoints!.student?.lastName ?? ''}' : 'لايوجد'}',
                       ),
                       Text(
-                        '${'topByNotes'.tr}: ${controller.sections[currentPage].topByNotes?.student?.firstName}'
-                        '${controller.sections[currentPage].topByNotes?.student?.lastName} ',
+                        '${'topByNotes'.tr}: ${controller.teacherRes!.sections[currentPage].topByNotes != null ? '${controller.teacherRes!.sections[currentPage].topByNotes!.student?.firstName ?? ''} ${controller.teacherRes!.sections[currentPage].topByNotes!.student?.lastName ?? ''}' : 'لايوجد'}',
                       ),
                       Text(
-                        '${'topByExams'.tr}: ${controller.sections[currentPage].topByExams?.student?.firstName}'
-                        '${controller.sections[currentPage].topByExams?.student?.lastName}',
+                        '${'topByExams'.tr}: ${controller.teacherRes!.sections[currentPage].topByExams != null ? '${controller.teacherRes!.sections[currentPage].topByExams!.student?.firstName ?? ''} ${controller.teacherRes!.sections[currentPage].topByExams!.student?.lastName ?? ''}' : 'لايوجد'}',
                       ),
                       Text(
-                          '${'avgExamResult'.tr}: ${controller.sections[currentPage].avgExamResult}'),
+                          '${'avgExamResult'.tr}: ${controller.teacherRes!.sections[currentPage].avgExamResult ?? 'لايوجد'}'),
                     ],
                   ),
                 ),

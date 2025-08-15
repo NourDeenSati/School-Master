@@ -28,14 +28,14 @@ class LoginController extends GetxController {
   Future<void> login() async {
     try {
       // التحقق من الحقول الفارغة
-      // if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-      //   throw 'empty_fields'.tr;
-      // }
+      if (emailController.text.isEmpty || passwordController.text.isEmpty) {
+        throw 'empty_fields'.tr;
+      }
 
-      // // التحقق من صحة البريد الإلكتروني
-      // if (!GetUtils.isEmail(emailController.text.trim())) {
-      //   throw 'invalid_email'.tr;
-      // }
+      // التحقق من صحة البريد الإلكتروني
+      if (!GetUtils.isEmail(emailController.text.trim())) {
+        throw 'invalid_email'.tr;
+      }
 
       isLoading.value = true;
 
@@ -76,7 +76,8 @@ class LoginController extends GetxController {
       } else {
         errorMessage = e.toString();
       }
-
+      print(emailController.text);
+      print(passwordController.text);
       Get.snackbar(
         'error'.tr,
         errorMessage,
@@ -87,5 +88,4 @@ class LoginController extends GetxController {
       isLoading.value = false;
     }
   }
-  }
-
+}

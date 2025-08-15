@@ -1,17 +1,20 @@
 import 'package:school_mangmante/models/student.dart';
 
 class TopStudent {
-  final Student student;
-  final int points;
+  final Student? student;
+  final int? points;
 
   TopStudent({
-    required this.student,
-    required this.points,
+    this.student,
+    this.points,
   });
 
-  factory TopStudent.fromJson(Map<String, dynamic> json) {
+  factory TopStudent.fromJson(Map<String, dynamic>? json) {
+    if (json == null) return TopStudent();
+
     return TopStudent(
-      student: Student.fromJson(json['student']),
+      student:
+          json['student'] != null ? Student.fromJson(json['student']) : null,
       points: json['points'],
     );
   }

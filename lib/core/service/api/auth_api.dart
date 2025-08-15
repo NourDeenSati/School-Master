@@ -4,7 +4,7 @@ import 'dart:convert';
 import '../../../models/login_response.dart';
 
 class AuthApi {
-  static const baseUrl = 'https://6b3b4a337a0b.ngrok-free.app';
+  static const baseUrl = 'http://137.184.50.2';
 
   static Future<LoginResponse> login(
       String email, String password, String lang) async {
