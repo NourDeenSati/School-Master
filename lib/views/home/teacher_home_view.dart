@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:school_mangmante/core/controllers/auth/teacher_controller.dart';
-import 'package:school_mangmante/views/auth/schedule.dart/schedule_page.dart';
+import 'package:school_mangmante/views/auth/schedule/schedule_page.dart';
 import 'package:school_mangmante/views/stream/call.dart';
 
 class TeacherHomeView extends StatefulWidget {
@@ -220,7 +220,7 @@ class _TeacherHomeViewState extends State<TeacherHomeView> {
               ),
 
               // ===== صفحة البث المباشر =====
-              SchedulePage(),
+              ScheduleCleanPage(),
               callView(),
               // ===== صفحة الإشعارات =====
               Center(child: Text('الإشعارات', style: TextStyle(fontSize: 24))),

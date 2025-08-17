@@ -20,9 +20,9 @@ class AuthApi {
       },
     );
 
-    print('Request: ${response.request}');
-    print('Status: ${response.statusCode}');
-    print('Body: ${response.body}');
+    // print('Request: ${response.request}');
+    // print('Status: ${response.statusCode}');
+    // print('Body: ${response.body}');
 
     if (response.statusCode == 200) {
       final decoded = json.decode(response.body);

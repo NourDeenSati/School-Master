@@ -1,22 +1,21 @@
 class ScheduleModel {
-  final bool success;
   final Map<String, List<ScheduleItem>> schedule;
 
-  ScheduleModel({required this.success, required this.schedule});
+  ScheduleModel({required this.schedule});
 
   factory ScheduleModel.fromJson(Map<String, dynamic> json) {
-    final Map<String, List<ScheduleItem>> map = {};
-    if (json['schedule'] != null && json['schedule'] is Map) {
-      (json['schedule'] as Map<String, dynamic>).forEach((day, items) {
-        map[day] = List<ScheduleItem>.from(
-          (items as List).map((e) => ScheduleItem.fromJson(e)),
-        );
+    final Map<String, List<ScheduleItem>> scheduleMap = {};
+    final scheduleJson = json['schedule'] as Map<String, dynamic>?;
+
+    if (scheduleJson != null) {
+      scheduleJson.forEach((day, items) {
+        scheduleMap[day] = (items as List)
+            .map((item) => ScheduleItem.fromJson(item))
+            .toList();
       });
     }
-    return ScheduleModel(
-      success: json['success'] ?? false,
-      schedule: map,
-    );
+
+    return ScheduleModel(schedule: scheduleMap);
   }
 }
 
@@ -35,10 +34,10 @@ class ScheduleItem {
 
   factory ScheduleItem.fromJson(Map<String, dynamic> json) {
     return ScheduleItem(
-      section: json['section']?.toString() ?? '',
-      period: json['period']?.toString() ?? '',
-      time: json['time']?.toString() ?? '',
-      subject: json['subject']?.toString() ?? '',
+      section: json['section'] ?? '',
+      period: json['period'] ?? '',
+      time: json['time'] ?? '',
+      subject: json['subject'] ?? '',
     );
   }
 }

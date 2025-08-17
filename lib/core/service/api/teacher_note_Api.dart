@@ -18,8 +18,8 @@ class TeacherNotesApi {
         headers: {"Authorization": "Bearer $token"},
       );
 
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      // print('Response status: ${response.statusCode}');
+      // print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         // تحقق من أن response.body هو JSON وليس boolean
@@ -61,8 +61,8 @@ class TeacherNotesApi {
         "reason": reason,
       }),
     );
-    print(response.body);
-    print(response.statusCode);
+    // print(response.body);
+    // print(response.statusCode);
     return response.statusCode == 201;
   }
 }
