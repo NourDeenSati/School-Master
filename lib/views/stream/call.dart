@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:school_mangmante/core/controllers/call/teacher_controller.dart';
 
-class Home extends StatelessWidget {
-  Home({super.key});
+class callView extends StatelessWidget {
+  callView({super.key});
   final LiveController controller = Get.put(LiveController());
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("جدولة بث مباشر")),
+      // appBar: AppBar(title: const Text("جدولة بث مباشر")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

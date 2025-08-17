@@ -1038,10 +1038,10 @@ packages:
     dependency: "direct main"
     description:
       name: zego_uikit_prebuilt_call
-      sha256: "0c0956a7932f50be8dcc8364271b41dd16cfbbb5e99871413e4c8ec1eb515a1e"
+      sha256: fac5d4fbb776f14b09819d21d43dd379e44943c0ec6abf5fde1ea169cc69324a
       url: "https://pub.dev"
     source: hosted
-    version: "4.17.10"
+    version: "4.17.13"
   zego_uikit_prebuilt_live_streaming:
     dependency: "direct main"
     description:
