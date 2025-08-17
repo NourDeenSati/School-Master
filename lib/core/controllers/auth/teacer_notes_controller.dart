@@ -1,9 +1,10 @@
 import 'package:get/get.dart';
 import 'package:school_mangmante/core/service/api/teacher_note_Api.dart';
 import 'package:school_mangmante/models/saction_data.dart';
+import 'package:school_mangmante/models/studint_Info.dart';
 
 class TeacherNotesController extends GetxController {
-  var classesData = <String, SectionData>{};
+  var classesData = <String, Map<String, SectionData>>{};
   var selectedClass = "".obs;
   var selectedSection = "".obs;
   var selectedStudentId = 0.obs;
@@ -17,6 +18,14 @@ class TeacherNotesController extends GetxController {
   void onInit() {
     fetchClasses();
     super.onInit();
+  }
+
+  List<StudintInfo> get currentStudents {
+    if (selectedClass.value.isEmpty || selectedSection.value.isEmpty) {
+      return [];
+    }
+    return classesData[selectedClass.value]?[selectedSection.value]?.students ??
+        [];
   }
 
   Future<void> fetchClasses() async {

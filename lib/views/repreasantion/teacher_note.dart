@@ -11,8 +11,10 @@ class TeacherNotesView extends StatelessWidget {
     final students = (controller.selectedClass.value.isEmpty ||
             controller.selectedSection.value.isEmpty)
         ? <StudintInfo>[]
-        : controller.classesData[controller.selectedClass.value]
-                ?.sections[controller.selectedSection.value] ??
+        : controller
+                .classesData[controller.selectedClass.value]
+                    ?[controller.selectedSection.value]
+                ?.students ??
             <StudintInfo>[];
 
     return Scaffold(
@@ -57,8 +59,10 @@ class TeacherNotesView extends StatelessWidget {
                     : controller.selectedSection.value,
                 items: controller.selectedClass.value.isEmpty
                     ? []
-                    : controller.classesData[controller.selectedClass.value]!
-                        .sections.keys // أسماء الشعب
+                    : controller
+                        .classesData[controller.selectedClass
+                            .value]! // هذه هي الخريطة التي تحتوي على أسماء الأقسام
+                        .keys // ✅ استخدم .keys مباشرةً على الخريطة
                         .map((secName) => DropdownMenuItem(
                               value: secName,
                               child: Text(secName),
@@ -72,24 +76,30 @@ class TeacherNotesView extends StatelessWidget {
 
               SizedBox(height: 16),
 
-              DropdownButtonFormField<int>(
-                decoration: InputDecoration(labelText: "select_student".tr),
-                value: controller.selectedStudentId.value == 0
-                    ? null
-                    : controller.selectedStudentId.value,
-                items: students
-                    .map((st) => DropdownMenuItem<int>(
-                          value: st.id,
-                          child: Text("${st.firstName} ${st.lastName}"),
-                        ))
-                    .toList(),
-                onChanged: students.isEmpty
-                    ? null // تعطيل إذا ما في طلاب
-                    : (val) => controller.selectedStudentId.value = val ?? 0,
-                validator: (_) => controller.selectedStudentId.value == 0
-                    ? "student_required".tr
-                    : null,
-              ),
+              Obx(() {
+                final students = controller.currentStudents;
+                return DropdownButtonFormField<int>(
+                  decoration: InputDecoration(
+                    labelText: "select_student".tr,
+                    errorText: students.isEmpty &&
+                            controller.selectedSection.value.isNotEmpty
+                        ? "no_students_found".tr
+                        : null,
+                  ),
+                  value: controller.selectedStudentId.value == 0
+                      ? null
+                      : controller.selectedStudentId.value,
+                  items: students
+                      .map((st) => DropdownMenuItem<int>(
+                            value: st.id,
+                            child: Text("${st.firstName} ${st.lastName}"),
+                          ))
+                      .toList(),
+                  onChanged: students.isEmpty
+                      ? null
+                      : (val) => controller.selectedStudentId.value = val ?? 0,
+                );
+              }),
 
               SizedBox(height: 16),
 
