@@ -9,7 +9,7 @@ class TeacherNotesApi {
   static const String baseUrl = "http://137.184.50.2";
 
   /// جلب الصفوف والشعب
-  static Future<Map<String, SectionData>> fetchClasses() async {
+  static Future<Map<String, Map<String, SectionData>>> fetchClasses() async {
     final storage = Get.find<StorageService>();
     final token = storage.token;
     try {
@@ -49,10 +49,11 @@ class TeacherNotesApi {
     final storage = Get.find<StorageService>();
     final token = storage.token;
     final response = await http.post(
-      Uri.parse("$baseUrl/api/v1/mobile/teacher/dictations/create"),
+      Uri.parse("$baseUrl/api/v1/mobile/teacher/notes/create"),
       headers: {
         "Authorization": "Bearer $token",
         "Content-Type": "application/json",
+        "Accept": "application/json"
       },
       body: jsonEncode({
         "student_id": studentId,
@@ -62,6 +63,6 @@ class TeacherNotesApi {
     );
     print(response.body);
     print(response.statusCode);
-    return response.statusCode == 200;
+    return response.statusCode == 201;
   }
 }
