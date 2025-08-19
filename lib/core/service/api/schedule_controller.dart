@@ -54,10 +54,10 @@ class ScheduleController extends GetxController {
           "Authorization": "Bearer $token",
         },
       );
-        print("Request URL: ${response.request?.url}");
-        print(response.headers);
-        print("Status: ${response.statusCode}");
-        print("Body: ${response.body}");
+        // print("Request URL: ${response.request?.url}");
+        // print(response.headers);
+        // print("Status: ${response.statusCode}");
+        // print("Body: ${response.body}");
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         schedule.value = ScheduleModel.fromJson(jsonData);

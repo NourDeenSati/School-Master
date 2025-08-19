@@ -221,7 +221,7 @@ class _TeacherHomeViewState extends State<TeacherHomeView> {
 
               // ===== صفحة البث المباشر =====
               ScheduleCleanPage(),
-              callView(),
+              CallView(),
               // ===== صفحة الإشعارات =====
               Center(child: Text('الإشعارات', style: TextStyle(fontSize: 24))),
             ],
