@@ -2,7 +2,8 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:school_mangmante/core/service/storage_service.dart';
-import 'package:school_mangmante/models/schedule_model.dart';
+import 'package:school_mangmante/models/student_schedule_model.dart';
+import 'package:school_mangmante/models/teacher_schedule_model.dart';
 
 class ScheduleController extends GetxController {
   var isLoading = false.obs;

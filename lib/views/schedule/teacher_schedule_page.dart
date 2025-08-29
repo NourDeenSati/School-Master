@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:school_mangmante/core/service/api/schedule_controller.dart';
-import 'package:school_mangmante/models/schedule_model.dart';
+import 'package:school_mangmante/core/service/api/teacher_schedule_controller.dart';
+import 'package:school_mangmante/models/teacher_schedule_model.dart';
 
 class ScheduleCleanPage extends StatelessWidget {
   ScheduleCleanPage({super.key});

@@ -2,8 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:school_mangmante/core/controllers/auth/teacher_controller.dart';
-import 'package:school_mangmante/views/auth/schedule/schedule_page.dart';
+import 'package:school_mangmante/core/service/storage_service.dart';
+import 'package:school_mangmante/views/auth/login_view.dart';
+import 'package:school_mangmante/views/schedule/teacher_schedule_page.dart';
 import 'package:school_mangmante/views/stream/call.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TeacherHomeView extends StatefulWidget {
   const TeacherHomeView({super.key});
@@ -15,7 +18,7 @@ class TeacherHomeView extends StatefulWidget {
 class _TeacherHomeViewState extends State<TeacherHomeView> {
   final controller = Get.put(TeacherController());
 
-  int bottomNavIndex = 0; // index للـ BottomNavigationBar
+  int bottomNavIndex = 0; 
   final PageController pageController = PageController();
   int sliderPage = 0;
   Timer? sliderTimer;
@@ -40,6 +43,43 @@ class _TeacherHomeViewState extends State<TeacherHomeView> {
     });
   }
 
+  // Future<void> signOut() async {
+  //   try {
+  //     final prefs = await SharedPreferences.getInstance();
+
+  //     // امسح البيانات المخزّنة (ولا تحذف الخدمات من GetX)
+  //     await prefs.clear();
+
+  //     // (اختياري) إن كنت تحفظ التوكن أيضًا في خدمة داخل الذاكرة:
+  //     final storage = Get.find<StorageService>();
+  //     storage.token == null;
+  //     storage.role == null;
+
+  //     // انتقل لصفحة الدخول مع تفريغ الـ stack
+  //     Get.offAll(() => LoginView());
+  //   } catch (e) {
+  //     Get.snackbar('خطأ', 'تعذّر تسجيل الخروج: $e');
+  //   }
+  // }
+
+  // Future<void> signOutKeeping({Set<String> keepKeys = const {}}) async {
+  //   try {
+  //     final prefs = await SharedPreferences.getInstance();
+
+  //     final keys = prefs.getKeys();
+  //     for (final k in keys) {
+  //       if (!keepKeys.contains(k)) {
+  //         await prefs.remove(k);
+  //       }
+  //     }
+
+  //     await Get.deleteAll(force: true);
+  //     Get.to(LoginView());
+  //   } catch (e) {
+  //     Get.snackbar('خطأ', 'تعذّر تسجيل الخروج: $e');
+  //   }
+  // }
+
   @override
   void dispose() {
     sliderTimer?.cancel();
@@ -58,6 +98,13 @@ class _TeacherHomeViewState extends State<TeacherHomeView> {
         return Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
+            actions: [
+              IconButton(
+                  onPressed: () {
+                    // signOut();
+                  },
+                  icon: Icon(Icons.logout))
+            ],
             title: Text(
               'teacherWelcome'.trParams({
                 'name':
@@ -261,19 +308,40 @@ class _TeacherHomeViewState extends State<TeacherHomeView> {
   }
 
   Widget _buildActionItem(IconData icon, String label, String route) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // الدائرة: قطرها = 1/6 من عرض الشاشة → نصف القطر = 1/12
+    final circleRadius = screenWidth / 12;
+
+    // حجم الخط (نسبة صغيرة من العرض)
+    final fontSize = screenWidth * 0.035; // تقريباً 3.5% من العرض
+
     return GestureDetector(
       onTap: () => Get.toNamed(route),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: EdgeInsets.symmetric(
+            horizontal: screenWidth * 0.03), // padding نسبي
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             CircleAvatar(
-              radius: 28,
+              radius: circleRadius,
               backgroundColor: const Color(0xFF4B70F5),
-              child: Icon(icon, color: Colors.white),
+              child: Icon(
+                icon,
+                color: Colors.white,
+                size: circleRadius * 0.8, // الأيقونة أصغر شوي من الدائرة
+              ),
             ),
-            const SizedBox(height: 6),
-            Text(label),
+            SizedBox(height: screenWidth * 0.015), // مسافة ديناميكية
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: fontSize,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),

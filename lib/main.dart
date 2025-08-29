@@ -14,12 +14,15 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final storageService = Get.put(await StorageService().init());
+
   await AppTranslations.loadTranslations();
 
   final savedLang = storageService.language;
   final savedRole = storageService.role;
   final savedToken = storageService.token;
 
+  print(savedToken);
+  
   String localeCode = savedLang ?? Get.deviceLocale?.languageCode ?? 'ar';
   Locale locale = Locale(localeCode);
 
@@ -48,6 +51,7 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
+  
   final Locale locale;
   final Widget home;
 

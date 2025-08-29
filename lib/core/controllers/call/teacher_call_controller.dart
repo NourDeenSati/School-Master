@@ -5,11 +5,10 @@ import 'package:http/http.dart' as http;
 import 'package:school_mangmante/views/stream/LivePage.dart';
 import 'package:zego_uikit_prebuilt_live_streaming/zego_uikit_prebuilt_live_streaming.dart';
 import 'package:intl/intl.dart';
-
 import 'package:school_mangmante/core/service/storage_service.dart';
 
 // ------------------------------
-// LiveController (GetX)
+// LiveController (GetX) - Teacher
 // ------------------------------
 class LiveController extends GetxController {
   final StorageService storage = Get.find<StorageService>();
@@ -17,8 +16,8 @@ class LiveController extends GetxController {
   final baseUrl = 'http://137.184.50.2';
 
   // Raw rooms data from the students API
-  final rooms = <String, dynamic>{}
-      .obs; // e.g. {"Primary Room 1": {"A": {..}, "B": {...}}}
+  final rooms = <String, dynamic>{}.obs; // e.g. {"Primary Room 1": {"A": {..}, "B": {...}}}
+  final currentCallId = RxnInt();
 
   // UI selections
   final selectedRoom = RxnString();
@@ -27,9 +26,6 @@ class LiveController extends GetxController {
   final selectedSubjectId = RxnInt();
   final selectedSectionId = RxnInt();
 
-  // optional numeric section id (API often expects numeric IDs). We'll fill it automatically if present in the API.
-  // final sectionIdController = TextEditingController();
-
   // schedule fields
   final selectedDate = Rxn<DateTime>();
   final selectedTime = Rxn<TimeOfDay>();
@@ -37,8 +33,7 @@ class LiveController extends GetxController {
 
   // misc
   final isLoading = false.obs;
-  final liveIdController =
-      TextEditingController(); // manual live id field (keeps compatibility with existing UI)
+  final liveIdController = TextEditingController(); // manual live id field
   final timeController = TextEditingController();
 
   @override
@@ -55,12 +50,96 @@ class LiveController extends GetxController {
     };
   }
 
+  // ---- helpers ----
+  String? _extractZegoToken(Map<String, dynamic> data) {
+    for (final k in ['token', 'zego_token', 'room_token', 'roomToken', 'zegoToken']) {
+      final v = data[k];
+      if (v != null && v.toString().trim().isNotEmpty) return v.toString().trim();
+    }
+    return null;
+  }
+
+  DateTime? _parseServerDateTime(String? value) {
+    if (value == null) return null;
+    try {
+      final safe = value.replaceFirst(' ', 'T');
+      return DateTime.parse(safe);
+    } catch (_) {
+      try {
+        return DateFormat('yyyy-MM-dd HH:mm:ss').parse(value);
+      } catch (e) {
+        return null;
+      }
+    }
+  }
+
+  DateTime? parseServerDateTime(String? value) => _parseServerDateTime(value);
+
+  // ---- teacher actions ----
+  Future<void> endLiveCall(int callId) async {
+    try {
+      final resp = await http.post(
+        Uri.parse('$baseUrl/api/v1/mobile/teacher/call/$callId/end'),
+        headers: headers,
+      );
+
+      print('<< End Call Status: ${resp.statusCode}');
+      print('<< End Call Body: ${resp.body}');
+
+      if (resp.statusCode == 200 || resp.statusCode == 201) {
+        final body = json.decode(resp.body);
+        if (body['status'] == true || body['success'] == true) {
+          Get.snackbar('تم الإنهاء', body['message'] ?? 'تم إنهاء البث');
+        } else {
+          Get.snackbar('خطأ', body['message'] ?? resp.body);
+        }
+      } else {
+        Get.snackbar('HTTP ${resp.statusCode}', resp.body);
+      }
+    } catch (e) {
+      Get.snackbar('Error', e.toString());
+      print('Exception end call: $e');
+    }
+  }
+
+  Future<bool> deleteScheduledCall(int callId) async {
+    try {
+      isLoading.value = true;
+      final uri = Uri.parse('$baseUrl/api/v1/mobile/teacher/scheduled-call/$callId');
+      final resp = await http.delete(uri, headers: headers);
+
+      if (resp.statusCode == 200 || resp.statusCode == 204) {
+        scheduledCalls.removeWhere((e) =>
+            (e['id'] == callId) ||
+            (e['call_id'] == callId) ||
+            ('${e['id']}' == '$callId') ||
+            ('${e['call_id']}' == '$callId'));
+        Get.snackbar('تم الحذف', 'تم حذف المكالمة رقم $callId بنجاح');
+        return true;
+      } else {
+        String msg = 'HTTP ${resp.statusCode}';
+        try {
+          final body = json.decode(resp.body);
+          msg = body['message']?.toString() ?? msg;
+        } catch (_) {}
+        Get.snackbar('تعذّر الحذف', msg);
+        return false;
+      }
+    } catch (e) {
+      Get.snackbar('تعذّر الحذف', e.toString());
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   Future<void> fetchRooms() async {
     try {
       isLoading.value = true;
       final resp = await http.get(
-          Uri.parse('$baseUrl/api/v1/mobile/teacher/students'),
-          headers: headers);
+        Uri.parse('$baseUrl/api/v1/mobile/teacher/students'),
+        headers: headers,
+      );
       if (resp.statusCode == 200) {
         final body = json.decode(resp.body);
         if (body['success'] == true && body['data'] != null) {
@@ -85,40 +164,51 @@ class LiveController extends GetxController {
   void onRoomChanged(String? roomName) {
     selectedRoom.value = roomName;
     selectedSection.value = null;
+    selectedSectionId.value = null;
+    selectedSubjectId.value = null; // <-- مهم
     subjects.clear();
-    // sectionIdController = '';
   }
 
   void onSectionChanged(String? sectionName) {
-  selectedSection.value = sectionName;
-  subjects.clear();
-  selectedSectionId.value = null; // reset
+    selectedSection.value = sectionName;
+    selectedSubjectId.value = null; // <-- مهم
+    subjects.clear();
+    selectedSectionId.value = null;
 
-  if (selectedRoom.value == null || selectedSection.value == null) return;
+    if (selectedRoom.value == null || selectedSection.value == null) return;
 
-  final roomMap = rooms[selectedRoom.value];
-  if (roomMap != null && roomMap[selectedSection.value] != null) {
-    final sectionMap = Map<String, dynamic>.from(roomMap[selectedSection.value]);
+    final roomMap = rooms[selectedRoom.value];
+    if (roomMap != null && roomMap[selectedSection.value] != null) {
+      final sectionMap = Map<String, dynamic>.from(roomMap[selectedSection.value]);
 
-    // load subjects
-    if (sectionMap['subjects'] != null) {
-      final list = List.from(sectionMap['subjects']);
-      subjects.assignAll(list.map((e) => Map<String, dynamic>.from(e)).toList());
+      // تحميل المواد مع إزالة التكرارات وتوحيد النوع إلى int
+      if (sectionMap['subjects'] != null) {
+        final list = List.from(sectionMap['subjects']);
+        final seen = <int>{};
+        final cleaned = <Map<String, dynamic>>[];
+
+        for (final e in list) {
+          final m = Map<String, dynamic>.from(e);
+          final id = m['id'] is int ? m['id'] as int : int.tryParse('${m['id']}');
+          if (id == null) continue;
+          if (seen.add(id)) {
+            m['id'] = id; // ثبّت النوع
+            cleaned.add(m);
+          }
+        }
+        subjects.assignAll(cleaned);
+      }
+
+      // استخراج section id كما هو عندك
+      int? sid;
+      if (sectionMap['id'] != null) {
+        sid = int.tryParse(sectionMap['id'].toString());
+      } else if (sectionMap['section_id'] != null) {
+        sid = int.tryParse(sectionMap['section_id'].toString());
+      }
+      selectedSectionId.value = sid;
     }
-
-    // extract numeric section id if present in the API payload
-    int? sid;
-    if (sectionMap['id'] != null) {
-      sid = int.tryParse(sectionMap['id'].toString());
-    } else if (sectionMap['section_id'] != null) {
-      sid = int.tryParse(sectionMap['section_id'].toString());
-    }
-
-    selectedSectionId.value = sid;
-    // optional: print for debug
-    print('>> selected section id for $sectionName = $sid');
   }
-}
 
   Future<void> pickDate(BuildContext context) async {
     final now = DateTime.now();
@@ -166,56 +256,27 @@ class LiveController extends GetxController {
     return fmt.format(dt);
   }
 
+  // إنشاء جدول بث جديد
   Future<void> startScheduledLiveStream(BuildContext context) async {
-    // Ensure we have section id, subject id, scheduled_at and headers
-int? sectionId = selectedSectionId.value;
-if (sectionId == null) {
-  Get.snackbar('خطأ', 'لم يتم اختيار الشعبة أو لا يتوفر معرف رقمي لها.');
-  return;
-}
-    // Try numeric from input first
-    // if (sectionIdText.isNotEmpty) {
-    //   sectionId = int.tryParse(sectionIdText);
-    // }
-
-    // If still null, try to extract from rooms map if user selected a room+section
-    if (sectionId == null &&
-        selectedRoom.value != null &&
-        selectedSection.value != null) {
-      try {
-        final roomMap = rooms[selectedRoom.value];
-        if (roomMap != null && roomMap[selectedSection.value] != null) {
-          final sectionMap =
-              Map<String, dynamic>.from(roomMap[selectedSection.value]);
-          if (sectionMap['id'] != null)
-            sectionId = int.tryParse(sectionMap['id'].toString());
-          if (sectionId == null && sectionMap['section_id'] != null) {
-            sectionId = int.tryParse(sectionMap['section_id'].toString());
-          }
-        }
-      } catch (e) {
-        // ignore parsing errors here
-      }
+    int? sectionId = selectedSectionId.value;
+    if (sectionId == null) {
+      Get.snackbar('خطأ', 'لم يتم اختيار الشعبة أو لا يتوفر معرف رقمي لها.');
+      return;
     }
 
-    // Subject id
     int? subjectId = selectedSubjectId.value;
     if (subjectId == null && subjects.isNotEmpty) {
-      // fallback: maybe pick first subject (or force user to choose)
       subjectId = subjects.first['id'] is int
           ? subjects.first['id'] as int
           : int.tryParse(subjects.first['id']?.toString() ?? '');
     }
 
-    // scheduled_at: try timeController then build from selectedDate/selectedTime
     String? scheduledAt = timeController.text.trim();
     if (scheduledAt.isEmpty) {
-      final built =
-          _buildScheduledAt(); // ensure you have this helper in controller
+      final built = _buildScheduledAt();
       if (built != null) scheduledAt = built;
     }
 
-    // Validation before sending
     if (sectionId == null) {
       Get.snackbar('خطأ', 'معرّف الشعبة (section_id) مفقود أو غير صالح.');
       return;
@@ -236,7 +297,6 @@ if (sectionId == null) {
       'duration_minutes': durationMinutes.value,
     };
 
-    // Ensure headers include content-type
     final token = storage.token ?? '';
     final requestHeaders = {
       'Accept': 'application/json',
@@ -247,7 +307,6 @@ if (sectionId == null) {
     try {
       isLoading.value = true;
 
-      // Debug: print request so you can see exactly what is sent
       print('>> Scheduling payload: ${json.encode(payload)}');
       print('>> Headers: $requestHeaders');
 
@@ -264,13 +323,11 @@ if (sectionId == null) {
         final body = json.decode(resp.body);
         if (body['status'] == true || body['success'] == true) {
           Get.snackbar('نجاح', body['message'] ?? 'تم جدولة البث');
-          // optionally refresh scheduled calls
           await fetchScheduledCalls();
         } else {
           Get.snackbar('خطأ', body['message'] ?? resp.body);
         }
       } else if (resp.statusCode == 422) {
-        // Show server validation errors to user
         final body = json.decode(resp.body);
         final msg = body['message'] ?? 'Validation error';
         final errors = body['errors'];
@@ -296,8 +353,9 @@ if (sectionId == null) {
     try {
       isLoading.value = true;
       final resp = await http.get(
-          Uri.parse('$baseUrl/api/v1/mobile/teacher/call/scheduled-calls'),
-          headers: headers);
+        Uri.parse('$baseUrl/api/v1/mobile/teacher/call/scheduled-calls'),
+        headers: headers,
+      );
       if (resp.statusCode == 200) {
         final body = json.decode(resp.body);
         if (body['success'] == true && body['data'] != null) {
@@ -305,8 +363,7 @@ if (sectionId == null) {
           scheduledCalls.assignAll(
               list.map((e) => Map<String, dynamic>.from(e)).toList());
         } else {
-          Get.snackbar(
-              'خطأ', body['message'] ?? 'Failed to load scheduled calls');
+          Get.snackbar('خطأ', body['message'] ?? 'Failed to load scheduled calls');
         }
       } else {
         Get.snackbar('HTTP ${resp.statusCode}', resp.body);
@@ -318,43 +375,12 @@ if (sectionId == null) {
     }
   }
 
-  // existing private parser
-  DateTime? _parseServerDateTime(String? value) {
-    if (value == null) return null;
-    try {
-      final safe = value.replaceFirst(' ', 'T');
-      return DateTime.parse(safe);
-    } catch (_) {
-      try {
-        return DateFormat('yyyy-MM-dd HH:mm:ss').parse(value);
-      } catch (e) {
-        return null;
-      }
-    }
-  }
-
-  // public wrapper so other files can call it
-  DateTime? parseServerDateTime(String? value) => _parseServerDateTime(value);
-
-  // DateTime? _parseServerDateTime(String? value) {
-  //   if (value == null) return null;
-  //   try {
-  //     // server format: "2025-08-19 09:30:00"
-  //     final safe = value.replaceFirst(' ', 'T');
-  //     return DateTime.parse(safe);
-  //   } catch (_) {
-  //     try {
-  //       return DateFormat('yyyy-MM-dd HH:mm:ss').parse(value);
-  //     } catch (e) {
-  //       return null;
-  //     }
-  //   }
-  // }
-
+  // بدء بث لمكالمة مجدولة موجودة
   bool canStartCall(Map<String, dynamic> scheduled) {
     final s = _parseServerDateTime(scheduled['scheduled_at']);
     if (s == null) return false;
-    return DateTime.now().isAtSameMomentAs(s) || DateTime.now().isAfter(s);
+    final now = DateTime.now();
+    return now.isAtSameMomentAs(s) || now.isAfter(s);
   }
 
   Future<void> startScheduledCall(
@@ -368,21 +394,40 @@ if (sectionId == null) {
     try {
       isLoading.value = true;
       final resp = await http.post(
-          Uri.parse('$baseUrl/api/v1/mobile/teacher/scheduled-call/$id/start'),
-          headers: headers);
+        Uri.parse('$baseUrl/api/v1/mobile/teacher/scheduled-call/$id/start'),
+        headers: headers,
+      );
+
       if (resp.statusCode == 200 || resp.statusCode == 201) {
         final body = json.decode(resp.body);
         if (body['status'] == true && body['data'] != null) {
           final data = Map<String, dynamic>.from(body['data']);
-          final channelName = data['channel_name']?.toString() ??
-              scheduled['channel_name']?.toString();
-          final userId = data['user_id'] ?? 0;
 
-          // Navigate to live page as host
-          Get.to(() => LivePage(), arguments: {
+          // ✅ التقاط callId من الريسبونس: جرّب 'call_id' ثم 'id'
+          final rawCallId = data.containsKey('call_id') ? data['call_id'] : data['id'];
+          int? callId = rawCallId is int ? rawCallId : int.tryParse('$rawCallId');
+
+          // قناة البث
+          final serverChannel = (data['channel_name'] ?? '').toString().trim();
+          final channelName =
+              serverChannel.isNotEmpty ? serverChannel : (callId != null ? 'call_$callId' : '');
+
+          // user_id كسلسلة (يتطابق مع توقيع التوكن)
+          final String userIdStr = '${data['user_id'] ?? ''}'.trim();
+
+          // التوكن من السيرفر
+          final String? zegoToken = _extractZegoToken(data);
+
+          // خزّنه داخل الكنترولر
+          currentCallId.value = callId;
+
+          // مرّر كل شيء للواجهة
+          Get.to(() => const LivePage(), arguments: {
             'liveID': channelName,
             'isHost': true,
-            'userId': userId
+            'userId': userIdStr,
+            'callId': callId,
+            if (zegoToken != null) 'zegoToken': zegoToken, // << مهم
           });
         } else {
           Get.snackbar('خطأ', body['message'] ?? resp.body);
@@ -394,6 +439,32 @@ if (sectionId == null) {
       Get.snackbar('Error', e.toString());
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<void> endScheduledCall(int callId) async {
+    try {
+      final resp = await http.post(
+        Uri.parse('$baseUrl/api/v1/mobile/teacher/call/$callId/end'),
+        headers: headers,
+      );
+
+      print('<< End Call Status: ${resp.statusCode}');
+      print('<< End Call Body: ${resp.body}');
+
+      if (resp.statusCode == 200 || resp.statusCode == 201) {
+        final body = json.decode(resp.body);
+        if (body['status'] == true || body['success'] == true) {
+          Get.snackbar('تم الإنهاء', body['message'] ?? 'تم إنهاء البث');
+        } else {
+          Get.snackbar('خطأ', body['message'] ?? resp.body);
+        }
+      } else {
+        Get.snackbar('HTTP ${resp.statusCode}', resp.body);
+      }
+    } catch (e) {
+      Get.snackbar('Error', e.toString());
+      print('Exception end call: $e');
     }
   }
 }

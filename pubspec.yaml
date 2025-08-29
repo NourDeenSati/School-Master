@@ -41,6 +41,7 @@ dependencies:
   zego_uikit_prebuilt_call: ^4.17.13
   permission_handler: ^11.4.0
   zego_uikit_prebuilt_live_streaming: ^3.14.2
+  fl_chart: ^1.0.0
 
 
 dev_dependencies:

@@ -1,3 +1,4 @@
+// LivePage_compat.dart (حل مؤقت للإصدارات القديمة)
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:zego_uikit_prebuilt_live_streaming/zego_uikit_prebuilt_live_streaming.dart';
@@ -5,28 +6,56 @@ import 'package:zego_uikit_prebuilt_live_streaming/zego_uikit_prebuilt_live_stre
 class LivePage extends StatelessWidget {
   const LivePage({super.key});
 
+  static const int zegoAppID = 1186915749;
+
   @override
   Widget build(BuildContext context) {
-    final args = Get.arguments as Map<String, dynamic>? ?? {};
-    final String liveID = args['liveID']?.toString() ?? '';
-    final bool isHost = args['isHost'] == true;
-    final int userId = args['userId'] ?? 0;
+    final args = Get.arguments as Map? ?? {};
+    final liveID = (args['liveID'] ?? '').toString();
+    final userID = (args['userId'] ?? args['userID'] ?? '').toString();
+    final userName = (args['userName'] ?? userID).toString();
+    final isHost = args['isHost'] == true;
+    final zegoToken = (args['zegoToken'] ?? '').toString(); // ← String غير-null
 
-    final config = isHost ? ZegoUIKitPrebuiltLiveStreamingConfig.host() : ZegoUIKitPrebuiltLiveStreamingConfig.audience();
+    final hostConfig = ZegoUIKitPrebuiltLiveStreamingConfig.host()
+      ..turnOnCameraWhenJoining = true
+      ..turnOnMicrophoneWhenJoining = true;
 
-    if (isHost) {
-      config.turnOnCameraWhenJoining = true;
-      config.turnOnMicrophoneWhenJoining = true;
-    }
+    final audienceConfig = ZegoUIKitPrebuiltLiveStreamingConfig.audience();
 
-    return SafeArea(
-      child: ZegoUIKitPrebuiltLiveStreaming(
-        appID: 193940000,
-        appSign: '2bf3b657d36911d853156cb0d442fc6e59e46aecaa4918c5bf3362a1ec258847',
-        userID: userId.toString(),
-        userName: 'user_name${userId}',
-        liveID: liveID,
-        config: config,
+    return Scaffold(
+      body: Stack(
+        children: [
+          ZegoUIKitPrebuiltLiveStreaming(
+            appID: zegoAppID,
+            token: zegoToken,      // يجب أن يأتي من السيرفر
+            userID: userID,
+            userName: userName,
+            liveID: liveID,
+            config: isHost ? hostConfig : audienceConfig,
+          ),
+          if (isHost)
+            Positioned(
+              top: 40,
+              left: 16,
+              right: 16,
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.55),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    'اضغط "Start Live" لبدء البث',
+                    style: TextStyle(color: Colors.white),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
