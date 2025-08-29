@@ -38,7 +38,6 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   flutter_svg: ^2.1.0
-  zego_uikit_prebuilt_call: ^4.17.13
   permission_handler: ^11.4.0
   zego_uikit_prebuilt_live_streaming: ^3.14.2
   fl_chart: ^1.0.0

@@ -59,9 +59,11 @@ class StudentScheduleController extends GetxController {
         schedule.value = StudentScheduleModel.fromApi(jsonData);
       } else {
         Get.snackbar("خطأ", "تعذر جلب البيانات (${response.statusCode})");
+        print(response.request);
       }
     } catch (e) {
       Get.snackbar("خطأ", e.toString());
+      print(e.toString());
     } finally {
       isLoading.value = false;
     }

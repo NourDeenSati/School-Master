@@ -211,23 +211,45 @@ class LiveController extends GetxController {
   }
 
   Future<void> pickDate(BuildContext context) async {
-    final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: now,
-      firstDate: now.subtract(const Duration(days: 365)),
-      lastDate: now.add(const Duration(days: 365)),
-    );
-    if (picked != null) selectedDate.value = picked;
-    _updateTimeField();
-  }
+  final now = DateTime.now();
+  final picked = await showDatePicker(
+    context: context,
+    initialDate: selectedDate.value != null && selectedDate.value!.isAfter(now)
+        ? selectedDate.value!
+        : now,
+    firstDate: DateTime(now.year, now.month, now.day), // ⬅️ لا يسمح بالماضي
+    lastDate: now.add(const Duration(days: 365)),
+  );
+  if (picked != null) selectedDate.value = picked;
+  _updateTimeField();
+}
 
-  Future<void> pickTime(BuildContext context) async {
-    final initial = TimeOfDay.now();
-    final picked = await showTimePicker(context: context, initialTime: initial);
-    if (picked != null) selectedTime.value = picked;
-    _updateTimeField();
+
+ Future<void> pickTime(BuildContext context) async {
+  final initial = TimeOfDay.now();
+  final picked = await showTimePicker(context: context, initialTime: initial);
+  if (picked != null) {
+    selectedTime.value = picked;
+
+    // تحقق أن (date+time) ليست بالماضي
+    if (selectedDate.value != null) {
+      final dt = DateTime(
+        selectedDate.value!.year,
+        selectedDate.value!.month,
+        selectedDate.value!.day,
+        selectedTime.value!.hour,
+        selectedTime.value!.minute,
+      );
+      if (dt.isBefore(DateTime.now())) {
+        Get.snackbar('وقت غير صالح', 'لا يمكنك اختيار وقت في الماضي.');
+        // أعد ضبط الوقت للحالي (اختياري)
+        selectedTime.value = TimeOfDay.now();
+      }
+    }
   }
+  _updateTimeField();
+}
+
 
   void _updateTimeField() {
     if (selectedDate.value != null && selectedTime.value != null) {

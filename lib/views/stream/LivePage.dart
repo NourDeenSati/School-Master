@@ -1,4 +1,3 @@
-// LivePage_compat.dart (حل مؤقت للإصدارات القديمة)
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:zego_uikit_prebuilt_live_streaming/zego_uikit_prebuilt_live_streaming.dart';
@@ -6,8 +5,8 @@ import 'package:zego_uikit_prebuilt_live_streaming/zego_uikit_prebuilt_live_stre
 class LivePage extends StatelessWidget {
   const LivePage({super.key});
 
-  static const int zegoAppID = 1186915749;
-
+  static const int zegoAppID = 1755363553;
+  static const String AppSign = 'd242dabfc0efa6ea523d82b349ae456c5634be4a69a1d286d3aabcf4ede7eb8b';
   @override
   Widget build(BuildContext context) {
     final args = Get.arguments as Map? ?? {};
@@ -28,7 +27,8 @@ class LivePage extends StatelessWidget {
         children: [
           ZegoUIKitPrebuiltLiveStreaming(
             appID: zegoAppID,
-            token: zegoToken,      // يجب أن يأتي من السيرفر
+            appSign: AppSign,
+            // token: zegoToken,      // يجب أن يأتي من السيرفر
             userID: userID,
             userName: userName,
             liveID: liveID,
@@ -47,11 +47,7 @@ class LivePage extends StatelessWidget {
                     color: Colors.black.withOpacity(0.55),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Text(
-                    'اضغط "Start Live" لبدء البث',
-                    style: TextStyle(color: Colors.white),
-                    textAlign: TextAlign.center,
-                  ),
+                
                 ),
               ),
             ),

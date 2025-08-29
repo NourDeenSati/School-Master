@@ -20,9 +20,9 @@ class ScheduleCleanPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("جدول الدوام"),
-      ),
+      // appBar: AppBar(
+      //   // title: const Text("جدول الدوام"),
+      // ),
       body: Obx(() {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());

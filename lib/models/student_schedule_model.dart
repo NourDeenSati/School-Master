@@ -15,11 +15,12 @@ class StudentInfo {
 }
 
 class ScheduleItem {
-  final String period;   // مثال: P2
-  final String time;     // مثال: 08:50:00 - 09:35:00
-  final String subject;  // مثال: Science
-  final String teacher;  // مثال: TeacherFirst4 TeacherLast4
-  final String? section; // من student.section
+  final String period;
+  final String time;
+  final String subject;
+  final String teacher;
+  final String? section;
+  final int? order; // جديد
 
   ScheduleItem({
     required this.period,
@@ -27,23 +28,25 @@ class ScheduleItem {
     required this.subject,
     required this.teacher,
     this.section,
+    this.order, // جديد
   });
 
   factory ScheduleItem.fromApi(Map<String, dynamic> j, {String? section}) {
-    final p = (j['period'] ?? {}) as Map<String, dynamic>;
-    final subj = (j['subject'] ?? {}) as Map<String, dynamic>;
-    final teach = (j['teacher'] ?? {}) as Map<String, dynamic>;
+    final p     = asMapSD(j['period']);
+    final subj  = asMapSD(j['subject']);
+    final teach = asMapSD(j['teacher']);
 
     final start = (p['start_time'] ?? '').toString();
     final end   = (p['end_time'] ?? '').toString();
     final time  = (start.isNotEmpty && end.isNotEmpty) ? '$start - $end' : '';
 
     return ScheduleItem(
-      period: (p['name'] ?? '').toString(),
-      time: time,
+      period : (p['name'] ?? '').toString(),
+      time   : time,
       subject: (subj['name'] ?? '').toString(),
       teacher: (teach['name'] ?? '').toString(),
       section: section,
+      order  : (p['order'] is int) ? p['order'] as int : int.tryParse('${p['order'] ?? ''}'),
     );
   }
 }
@@ -61,41 +64,42 @@ class StudentScheduleModel {
   });
 
   /// يتوقع الـ JSON الكامل للـ API (الجذر)
-  factory StudentScheduleModel.fromApi(Map<String, dynamic> json) {
-    final data = (json['data'] ?? {}) as Map<String, dynamic>;
+ factory StudentScheduleModel.fromApi(Map<String, dynamic> json) {
+  final data    = asMapSD(json['data']);
+  final student = StudentInfo.fromJson(asMapSD(data['student']));
+  final week    = (data['week'] is List) ? data['week'] as List : const [];
 
-    final student = StudentInfo.fromJson((data['student'] ?? {}) as Map<String, dynamic>);
-    final week = (data['week'] as List? ?? []).cast<Map<String, dynamic>>();
-    final total = (data['total'] ?? 0) as int;
+  final total = (data['total'] is int)
+      ? data['total'] as int
+      : int.tryParse('${data['total'] ?? 0}') ?? 0;
 
-    final map = <String, List<ScheduleItem>>{};
+  final map = <String, List<ScheduleItem>>{};
 
-    for (final dayObj in week) {
-      final dayKey = (dayObj['day'] ?? '').toString();      // مثال: saturday
-      final items  = (dayObj['items'] as List? ?? []).cast<Map<String, dynamic>>();
+  for (final dayRaw in week) {
+    final dayObj  = asMapSD(dayRaw);
+    final dayKey  = (dayObj['day'] ?? '').toString();
+    final items   = asListMapSD(dayObj['items']);
 
-      final rows = items.map((it) => ScheduleItem.fromApi(it, section: student.section)).toList();
+    final rows = items
+        .map((it) => ScheduleItem.fromApi(it, section: student.section))
+        .toList();
 
-      // ترتيب حسب period.order إن وُجد
-      rows.sort((a, b) {
-        final pa = (dayObj['items'] as List).firstWhere(
-          (x) => ((x as Map)['period']?['name'] ?? '') == a.period,
-          orElse: () => null,
-        ) as Map<String, dynamic>?;
-
-        final pb = (dayObj['items'] as List).firstWhere(
-          (x) => ((x as Map)['period']?['name'] ?? '') == b.period,
-          orElse: () => null,
-        ) as Map<String, dynamic>?;
-
-        final oa = (pa?['period']?['order'] ?? 0) as int;
-        final ob = (pb?['period']?['order'] ?? 0) as int;
-        return oa.compareTo(ob);
-      });
-
-      map[dayKey] = rows;
-    }
-
-    return StudentScheduleModel(student: student, schedule: map, total: total);
+ 
+    map[dayKey] = rows;
   }
+
+  return StudentScheduleModel(student: student, schedule: map, total: total);
+}
+}
+Map<String, dynamic> asMapSD(dynamic v) =>
+    v is Map ? Map<String, dynamic>.from(v as Map) : <String, dynamic>{};
+
+List<Map<String, dynamic>> asListMapSD(dynamic v) {
+  if (v is List) {
+    return v
+        .whereType<Map>() // يستبعد null/أنواع أخرى
+        .map((m) => Map<String, dynamic>.from(m))
+        .toList();
+  }
+  return <Map<String, dynamic>>[];
 }

@@ -88,6 +88,7 @@ class _AttendanceBarChart extends StatelessWidget {
     final s = c.stats.value;
     if (s.attendanceByType.isEmpty) {
       return const Center(child: Text('لا توجد بيانات حضور لعرضها'));
+      
     }
 
     // ترتيب ثابت لأنواع الحضور إن وُجدت
