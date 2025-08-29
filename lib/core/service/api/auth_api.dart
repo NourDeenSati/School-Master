@@ -26,8 +26,8 @@ class AuthApi {
 
     if (response.statusCode == 200) {
       final decoded = json.decode(response.body);
-      final data = decoded['data']; // ← يحتوي على "user" و "token"
-      return LoginResponse.fromJson(data); // ← تمرير مباشرة للـ fromJson
+      final data = decoded['data'];
+      return LoginResponse.fromJson(data);
     } else {
       throw Exception(
           json.decode(response.body)['message'] ?? 'فشل تسجيل الدخول');

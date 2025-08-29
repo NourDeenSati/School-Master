@@ -20,7 +20,7 @@ class LoginView extends StatelessWidget {
                   ClipRect(
                     child: Align(
                       alignment: Alignment.topCenter,
-                      heightFactor: 0.82, // يقلل المساحة المحجوزة للصورة
+                      heightFactor: 0.82,
                       child: Transform.scale(
                         scale: 1.2,
                         child: Image.asset(
@@ -121,10 +121,7 @@ class LoginView extends StatelessWidget {
                           icon: Icon(controller.obscureText == false
                               ? Icons.visibility
                               : Icons.visibility_off)),
-                      prefixIcon:
-                          // تحديد عرض ثابت للمساحة
-                          //alignment: Alignment.center,
-                          Padding(
+                      prefixIcon: Padding(
                         padding: const EdgeInsets.all(5.0),
                         child: Container(
                           decoration: BoxDecoration(
@@ -163,12 +160,10 @@ class LoginView extends StatelessWidget {
                   width: MediaQuery.of(context).size.width * 0.8,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF4B70F5), // لون الخلفية
-                      foregroundColor:
-                          Color(0xFF4B70F5), // لون تأثير النقر أو النص
+                      backgroundColor: Color(0xFF4B70F5),
+                      foregroundColor: Color(0xFF4B70F5),
                       shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(20), // اختياري: تدوير الزر
+                        borderRadius: BorderRadius.circular(20),
                       ),
                     ),
                     onPressed: controller.login,

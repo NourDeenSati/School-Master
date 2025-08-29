@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:school_mangmante/theme/theme.dart';
+import 'package:school_mangmante/views/repreasantion/TeacherExplorationView.dart';
+import 'package:school_mangmante/views/repreasantion/Teacher_DictationsVies.dart';
 import 'package:school_mangmante/views/repreasantion/teacher_note.dart';
 import 'core/service/storage_service.dart';
 import 'assets/translations/app_translations.dart';
@@ -36,8 +38,8 @@ void main() async {
       case 'teacher':
         initialPage = const TeacherHomeView();
         break;
-      case 'admin':
-        initialPage = const AdminHomeView();
+      case 'supervisor':
+        initialPage = const AdministerHomeView();
         break;
       default:
         initialPage = LoginView();
@@ -66,8 +68,8 @@ class MyApp extends StatelessWidget {
       routes: {
         // الصفحة الرئيسية
         '/teacher_note': (context) => TeacherNotesView(),
-        // '/behavior': (context) => BehaviorPage(),
-        // '/recite': (context) => RecitationPage(),
+        '/Teacher_DictationsVies': (context) => TeacherDictationsView(),
+        '/TeacherExplorationView': (context) => TeacherExplorationView(),
         // '/attendance': (context) => AttendancePage(),
       },
     );

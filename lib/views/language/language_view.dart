@@ -23,7 +23,7 @@ class LanguageView extends StatelessWidget {
                 onPressed: () => controller.selectLanguage('ar'),
                 child: const Text(
                   'العربية',
-                  style: TextStyle(fontSize: 40, color: Color(0xFF4B70F5)),
+                  style: TextStyle(fontSize: 40),
                 ),
               ),
             ),
@@ -35,7 +35,9 @@ class LanguageView extends StatelessWidget {
                 onPressed: () => controller.selectLanguage('en'),
                 child: const Text(
                   'English',
-                  style: TextStyle(fontSize: 40, color: Color(0xFF4B70F5)),
+                  style: TextStyle(
+                    fontSize: 40,
+                  ),
                 ),
               ),
             ),

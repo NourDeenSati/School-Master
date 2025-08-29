@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:school_mangmante/core/controllers/auth/administe_controller.dart';
 import 'package:school_mangmante/core/controllers/auth/teacer_represention_controller.dart';
 import 'package:school_mangmante/models/studint_Info.dart';
 
-class TeacherNotesView extends StatelessWidget {
-  final TeacherNotesController controller = Get.put(TeacherNotesController());
+class AttendancePage extends StatelessWidget {
+  final AdministerHomeController controller =
+      Get.put(AdministerHomeController());
 
   @override
   Widget build(BuildContext context) {
@@ -19,8 +21,11 @@ class TeacherNotesView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("add_note".tr),
-        backgroundColor: Color(0xFF4B70F5),
+        title: Text(
+          "state Attendeance".tr,
+          style: TextStyle(color: Color(0xFF4B70F5)),
+        ),
+        backgroundColor: Colors.white,
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
@@ -31,6 +36,9 @@ class TeacherNotesView extends StatelessWidget {
           padding: const EdgeInsets.all(16.0),
           child: ListView(
             children: [
+              SizedBox(
+                height: 5,
+              ),
               DropdownButtonFormField<String>(
                 decoration: InputDecoration(labelText: "select_class".tr),
                 value: controller.selectedClass.value.isEmpty
@@ -97,30 +105,54 @@ class TeacherNotesView extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("note_type".tr,
+                  Text("choose a stuaition".tr,
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   Obx(() => Row(
                         children: [
-                          Expanded(
+                          Flexible(
+                            fit: FlexFit.tight,
                             child: RadioListTile<String>(
-                              title: Text("positive_note".tr),
-                              value: "positive",
-                              groupValue: controller.noteType.value,
+                              title: Text(
+                                "Attendance".tr,
+                              ),
+                              value: "1",
+                              groupValue: controller.attendance_type_id.value
+                                  .toString(),
                               activeColor: Color(0xFF4B70F5),
                               onChanged: (value) {
-                                controller.noteType.value = value ?? "positive";
+                                controller.attendance_type_id.value =
+                                    int.parse(value!) ?? 1;
                               },
                             ),
                           ),
-                          Expanded(
+                          Flexible(
+                            fit: FlexFit.tight,
                             child: RadioListTile<String>(
-                              title: Text("negative_note".tr),
-                              value: "negative",
-                              groupValue: controller.noteType.value,
+                              title: Text("Absent".tr),
+                              value: "2",
+                              groupValue: controller.attendance_type_id.value
+                                  .toString(),
                               activeColor: Color(0xFF4B70F5),
                               onChanged: (value) {
-                                controller.noteType.value = value ?? "positive";
+                                controller.attendance_type_id.value =
+                                    int.parse(value!) ?? 2;
+                              },
+                            ),
+                          ),
+                          Flexible(
+                            fit: FlexFit.tight,
+                            child: RadioListTile<String>(
+                              title: Text(
+                                "Layte".tr,
+                              ),
+                              value: "3",
+                              groupValue: controller.attendance_type_id.value
+                                  .toString(),
+                              activeColor: Color(0xFF4B70F5),
+                              onChanged: (value) {
+                                controller.attendance_type_id.value =
+                                    int.parse(value!) ?? 3;
                               },
                             ),
                           ),
@@ -128,20 +160,26 @@ class TeacherNotesView extends StatelessWidget {
                       )),
                 ],
               ),
+              SizedBox(height: 16),
+              TextField(
+                decoration: InputDecoration(labelText: "Time (yyyy-MM-dd)".tr),
+                onChanged: (val) => controller.startTime.value = val,
+              ),
+              SizedBox(height: 16),
               TextField(
                 decoration: InputDecoration(
-                  labelText: "reason".tr,
+                  labelText: "justification".tr,
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 3,
-                onChanged: (val) => controller.reason.value = val,
+                onChanged: (val) => controller.justification.value = val,
               ),
               SizedBox(height: 20),
               Obx(() {
                 return ElevatedButton(
                   onPressed: controller.isSending.value
                       ? null
-                      : () => controller.sendNote(),
+                      : () => controller.sendStateAttendance(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFF4B70F5),
                     minimumSize: Size(double.infinity, 50),

@@ -54,6 +54,43 @@ class _TeacherHomeViewState extends State<TeacherHomeView> {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
+        if (controller.isLoading.value) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+// ✅ إذا ما في بيانات أو فشل التحميل
+        if (controller.teacherRes == null) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text("واجهة المعلم"),
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    "فشل تحميل البيانات",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      controller.fetchTeacherData();
+                    },
+                    icon: const Icon(Icons.refresh),
+                    label: const Text("إعادة المحاولة"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4B70F5),
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
 
         return Scaffold(
           backgroundColor: Colors.white,
@@ -83,7 +120,7 @@ class _TeacherHomeViewState extends State<TeacherHomeView> {
                     SizedBox(
                       height: 150,
                       child: PageView.builder(
-                        itemCount: controller.teacherRes!.sections.length,
+                        itemCount: controller.teacherRes?.sections.length ?? 0,
                         onPageChanged: (index) {
                           setState(() {
                             sliderPage = index;
@@ -167,12 +204,12 @@ class _TeacherHomeViewState extends State<TeacherHomeView> {
                         children: [
                           _buildActionItem(
                               Icons.edit_note, 'notes'.tr, '/teacher_note'),
+                          _buildActionItem(Icons.flag, 'Custom Questaion'.tr,
+                              '/Teacher_DictationsVies'),
+                          _buildActionItem(Icons.menu_book, 'exploration'.tr,
+                              '/TeacherExplorationView'),
                           _buildActionItem(
-                              Icons.flag, 'behavior'.tr, '/behavior'),
-                          _buildActionItem(
-                              Icons.menu_book, 'recitation'.tr, '/recite'),
-                          _buildActionItem(
-                              Icons.timer, 'attendance'.tr, '/attendance'),
+                              Icons.timer, 'exam'.tr, '/attendance'),
                         ],
                       ),
                     ),

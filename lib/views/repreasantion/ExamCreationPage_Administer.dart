@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:school_mangmante/core/controllers/auth/administe_controller.dart';
 import 'package:school_mangmante/core/controllers/auth/teacer_represention_controller.dart';
 import 'package:school_mangmante/models/studint_Info.dart';
 
-class TeacherNotesView extends StatelessWidget {
-  final TeacherNotesController controller = Get.put(TeacherNotesController());
+class ExamCraetionPage extends StatelessWidget {
+  final AdministerHomeController controller =
+      Get.put(AdministerHomeController());
 
   @override
   Widget build(BuildContext context) {
@@ -19,8 +22,11 @@ class TeacherNotesView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("add_note".tr),
-        backgroundColor: Color(0xFF4B70F5),
+        title: Text(
+          "Create Exam".tr,
+          style: TextStyle(color: Color(0xFF4B70F5)),
+        ),
+        backgroundColor: Colors.white,
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
@@ -31,6 +37,9 @@ class TeacherNotesView extends StatelessWidget {
           padding: const EdgeInsets.all(16.0),
           child: ListView(
             children: [
+              SizedBox(
+                height: 5,
+              ),
               DropdownButtonFormField<String>(
                 decoration: InputDecoration(labelText: "select_class".tr),
                 value: controller.selectedClass.value.isEmpty
@@ -70,78 +79,58 @@ class TeacherNotesView extends StatelessWidget {
               ),
               SizedBox(height: 16),
               Obx(() {
-                final students = controller.currentStudents;
+                final subject = controller.currentSubject;
                 return DropdownButtonFormField<int>(
                   decoration: InputDecoration(
-                    labelText: "select_student".tr,
-                    errorText: students.isEmpty &&
+                    labelText: "select_subject".tr,
+                    errorText: subject.isEmpty &&
                             controller.selectedSection.value.isNotEmpty
-                        ? "no_students_found".tr
+                        ? "no_subject_found".tr
                         : null,
                   ),
-                  value: controller.selectedStudentId.value == 0
-                      ? null
-                      : controller.selectedStudentId.value,
-                  items: students
-                      .map((st) => DropdownMenuItem<int>(
-                            value: st.id,
-                            child: Text("${st.firstName} ${st.lastName}"),
+                  value: subject.any(
+                          (sb) => sb.id == controller.selectedSubjectId.value)
+                      ? controller.selectedSubjectId.value
+                      : null,
+                  items: subject
+                      .map((sb) => DropdownMenuItem<int>(
+                            value: sb.id,
+                            child: Text(sb.name),
                           ))
                       .toList(),
-                  onChanged: students.isEmpty
+                  onChanged: subject.isEmpty
                       ? null
-                      : (val) => controller.selectedStudentId.value = val ?? 0,
+                      : (val) => controller.selectedSubjectId.value = val ?? 0,
                 );
               }),
               SizedBox(height: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("note_type".tr,
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  Obx(() => Row(
-                        children: [
-                          Expanded(
-                            child: RadioListTile<String>(
-                              title: Text("positive_note".tr),
-                              value: "positive",
-                              groupValue: controller.noteType.value,
-                              activeColor: Color(0xFF4B70F5),
-                              onChanged: (value) {
-                                controller.noteType.value = value ?? "positive";
-                              },
-                            ),
-                          ),
-                          Expanded(
-                            child: RadioListTile<String>(
-                              title: Text("negative_note".tr),
-                              value: "negative",
-                              groupValue: controller.noteType.value,
-                              activeColor: Color(0xFF4B70F5),
-                              onChanged: (value) {
-                                controller.noteType.value = value ?? "positive";
-                              },
-                            ),
-                          ),
-                        ],
-                      )),
-                ],
-              ),
-              TextField(
+              TextFormField(
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 decoration: InputDecoration(
-                  labelText: "reason".tr,
-                  border: OutlineInputBorder(),
+                  labelText: "Name Probe".tr,
                 ),
-                maxLines: 3,
-                onChanged: (val) => controller.reason.value = val,
+                onChanged: (val) {
+                  if (val.isEmpty) {
+                    controller.maxResult.value = null; // ما يخزن شي
+                  } else {
+                    controller.maxResult.value =
+                        int.tryParse(val); // يخزن رقم صحيح
+                  }
+                },
               ),
+              SizedBox(height: 16),
               SizedBox(height: 20),
               Obx(() {
+                final isValid = controller.maxResult.value != null &&
+                    controller.selectedClass.value.isNotEmpty &&
+                    controller.selectedSection.value.isNotEmpty &&
+                    controller.selectedSubjectId.value != 0;
+
                 return ElevatedButton(
-                  onPressed: controller.isSending.value
+                  onPressed: (!isValid || controller.isSending.value)
                       ? null
-                      : () => controller.sendNote(),
+                      : () => controller.sendCreateExam(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFF4B70F5),
                     minimumSize: Size(double.infinity, 50),
