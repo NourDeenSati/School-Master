@@ -6,8 +6,8 @@ class LoginResponse {
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
     return LoginResponse(
-      token: json['token'], // ✅ مباشرة
-      user: User.fromJson(json['user']), // ✅ مباشرة
+      token: json['token'],
+      user: User.fromJson(json['user']),
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart';
+import 'package:school_mangmante/core/controllers/auth/authManger.dart';
 import 'package:school_mangmante/core/controllers/call/student_call_controller.dart';
 import 'package:school_mangmante/core/controllers/student_controller.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -42,6 +43,25 @@ class _StudentHomeViewState extends State<StudentHomeView> {
           appBar: AppBar(
             title: Text('مرحبا ${name}',
                 style: const TextStyle(color: Colors.white)),
+            actions: [
+              Obx(
+                () {
+                  final loggingOut = AuthManager.isLoggingOut.value;
+                  return IconButton(
+                    onPressed:
+                        loggingOut ? null : () => AuthManager.logoutSafely(),
+                    icon: loggingOut
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.logout),
+                    tooltip: 'تسجيل الخروج',
+                  );
+                },
+              )
+            ],
           ),
           body: PageView(
             controller: pageController,
@@ -88,7 +108,6 @@ class _AttendanceBarChart extends StatelessWidget {
     final s = c.stats.value;
     if (s.attendanceByType.isEmpty) {
       return const Center(child: Text('لا توجد بيانات حضور لعرضها'));
-      
     }
 
     // ترتيب ثابت لأنواع الحضور إن وُجدت

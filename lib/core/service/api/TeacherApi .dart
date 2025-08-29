@@ -6,7 +6,7 @@ import '../../../models/teacher_home_response.dart';
 import '../../service/storage_service.dart';
 
 class TeacherApi {
-  static const String baseUrl = 'http://137.184.50.2'; // عدل لاحقًا
+  static const String baseUrl = 'http://137.184.50.2';
 
   static Future<TeacherHomeResponse> getTeacherHomeData(String token) async {
     final storage = Get.find<StorageService>();
@@ -26,10 +26,10 @@ class TeacherApi {
 
       return TeacherHomeResponse.fromJson(json.decode(response.body));
     } else {
-      // نحاول استخراج رسالة الخطأ من الـ response
       final error =
           json.decode(response.body)['message'] ?? 'فشل في جلب بيانات المعلم';
       print(response.body);
+      print(response.statusCode);
       Text('error');
       throw Exception(error);
     }

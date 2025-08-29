@@ -26,11 +26,42 @@ class AuthApi {
 
     if (response.statusCode == 200) {
       final decoded = json.decode(response.body);
-      final data = decoded['data']; // ← يحتوي على "user" و "token"
-      return LoginResponse.fromJson(data); // ← تمرير مباشرة للـ fromJson
+      final data = decoded['data'];
+      return LoginResponse.fromJson(data);
     } else {
       throw Exception(
           json.decode(response.body)['message'] ?? 'فشل تسجيل الدخول');
     }
   }
+  static Future<void> logout({
+    required String token,
+    required String lang,
+  }) async {
+    final uri = Uri.parse('$baseUrl/api/v1/logout');
+
+    final response = await http
+        .post(
+          uri,
+          headers: {
+            'Accept': 'application/json',
+            'Accept-Language': lang,
+            'Authorization': 'Bearer $token',
+          },
+        )
+        .timeout(const Duration(seconds: 15));
+
+    // اعتبر النجاح أي من 200..204
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return;
+    }
+
+    // 401: التوكن منتهي/غير صالح -> ما نوقف الخروج المحلي
+    if (response.statusCode == 401) {
+      throw Exception('unauthorized'); // راح نتعامل معها فوق
+    }
+
+    // حاول ترجع رسالة السيرفر لو فيه
+    throw Exception('logout_failed');
+  }
 }
+

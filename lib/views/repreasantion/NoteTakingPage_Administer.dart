@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:school_mangmante/core/controllers/auth/administe_controller.dart';
 import 'package:school_mangmante/core/controllers/auth/teacer_represention_controller.dart';
 import 'package:school_mangmante/models/studint_Info.dart';
 
-class TeacherNotesView extends StatelessWidget {
-  final TeacherNotesController controller = Get.put(TeacherNotesController());
+class NoteTakingPage extends StatelessWidget {
+  final AdministerHomeController controller =
+      Get.put(AdministerHomeController());
 
   @override
   Widget build(BuildContext context) {
@@ -19,8 +22,11 @@ class TeacherNotesView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("add_note".tr),
-        backgroundColor: Color(0xFF4B70F5),
+        title: Text(
+          "add_note".tr,
+          style: TextStyle(color: Color(0xFF4B70F5)),
+        ),
+        backgroundColor: Colors.white,
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
@@ -31,6 +37,10 @@ class TeacherNotesView extends StatelessWidget {
           padding: const EdgeInsets.all(16.0),
           child: ListView(
             children: [
+              SizedBox(
+                height: 5,
+              ),
+              // اختيار الصف
               DropdownButtonFormField<String>(
                 decoration: InputDecoration(labelText: "select_class".tr),
                 value: controller.selectedClass.value.isEmpty
@@ -49,6 +59,8 @@ class TeacherNotesView extends StatelessWidget {
                 },
               ),
               SizedBox(height: 16),
+
+              // اختيار الشعبة
               DropdownButtonFormField<String>(
                 decoration: InputDecoration(labelText: "select_section".tr),
                 value: controller.selectedSection.value.isEmpty
@@ -57,7 +69,9 @@ class TeacherNotesView extends StatelessWidget {
                 items: controller.selectedClass.value.isEmpty
                     ? []
                     : controller
-                        .classesData[controller.selectedClass.value]!.keys
+                        .classesData[controller.selectedClass
+                            .value]! // هذه هي الخريطة التي تحتوي على أسماء الأقسام
+                        .keys // ✅ استخدم .keys مباشرةً على الخريطة
                         .map((secName) => DropdownMenuItem(
                               value: secName,
                               child: Text(secName),
@@ -68,7 +82,9 @@ class TeacherNotesView extends StatelessWidget {
                   controller.selectedStudentId.value = 0;
                 },
               ),
+
               SizedBox(height: 16),
+
               Obx(() {
                 final students = controller.currentStudents;
                 return DropdownButtonFormField<int>(
@@ -93,7 +109,11 @@ class TeacherNotesView extends StatelessWidget {
                       : (val) => controller.selectedStudentId.value = val ?? 0,
                 );
               }),
+
               SizedBox(height: 16),
+
+              // نوع الملاحظة
+              // نوع الملاحظة (Radio Buttons)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -113,7 +133,8 @@ class TeacherNotesView extends StatelessWidget {
                               },
                             ),
                           ),
-                          Expanded(
+                          Flexible(
+                            fit: FlexFit.tight,
                             child: RadioListTile<String>(
                               title: Text("negative_note".tr),
                               value: "negative",
@@ -128,6 +149,18 @@ class TeacherNotesView extends StatelessWidget {
                       )),
                 ],
               ),
+              SizedBox(height: 16),
+              TextField(
+                decoration: InputDecoration(
+                  labelText: "value degree",
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                onChanged: (val) =>
+                    controller.value1.value = double.tryParse(val!) ?? 0,
+              ),
+              SizedBox(height: 16),
+              // سبب الملاحظة
               TextField(
                 decoration: InputDecoration(
                   labelText: "reason".tr,
@@ -137,6 +170,8 @@ class TeacherNotesView extends StatelessWidget {
                 onChanged: (val) => controller.reason.value = val,
               ),
               SizedBox(height: 20),
+              SizedBox(height: 16),
+              // زر الإرسال
               Obx(() {
                 return ElevatedButton(
                   onPressed: controller.isSending.value

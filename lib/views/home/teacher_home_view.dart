@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:school_mangmante/core/controllers/auth/authManger.dart';
 import 'package:school_mangmante/core/controllers/auth/teacher_controller.dart';
 import 'package:school_mangmante/core/service/storage_service.dart';
 import 'package:school_mangmante/views/auth/login_view.dart';
@@ -18,7 +19,7 @@ class TeacherHomeView extends StatefulWidget {
 class _TeacherHomeViewState extends State<TeacherHomeView> {
   final controller = Get.put(TeacherController());
 
-  int bottomNavIndex = 0; 
+  int bottomNavIndex = 0;
   final PageController pageController = PageController();
   int sliderPage = 0;
   Timer? sliderTimer;
@@ -43,43 +44,6 @@ class _TeacherHomeViewState extends State<TeacherHomeView> {
     });
   }
 
-  // Future<void> signOut() async {
-  //   try {
-  //     final prefs = await SharedPreferences.getInstance();
-
-  //     // امسح البيانات المخزّنة (ولا تحذف الخدمات من GetX)
-  //     await prefs.clear();
-
-  //     // (اختياري) إن كنت تحفظ التوكن أيضًا في خدمة داخل الذاكرة:
-  //     final storage = Get.find<StorageService>();
-  //     storage.token == null;
-  //     storage.role == null;
-
-  //     // انتقل لصفحة الدخول مع تفريغ الـ stack
-  //     Get.offAll(() => LoginView());
-  //   } catch (e) {
-  //     Get.snackbar('خطأ', 'تعذّر تسجيل الخروج: $e');
-  //   }
-  // }
-
-  // Future<void> signOutKeeping({Set<String> keepKeys = const {}}) async {
-  //   try {
-  //     final prefs = await SharedPreferences.getInstance();
-
-  //     final keys = prefs.getKeys();
-  //     for (final k in keys) {
-  //       if (!keepKeys.contains(k)) {
-  //         await prefs.remove(k);
-  //       }
-  //     }
-
-  //     await Get.deleteAll(force: true);
-  //     Get.to(LoginView());
-  //   } catch (e) {
-  //     Get.snackbar('خطأ', 'تعذّر تسجيل الخروج: $e');
-  //   }
-  // }
-
   @override
   void dispose() {
     sliderTimer?.cancel();
@@ -94,16 +58,65 @@ class _TeacherHomeViewState extends State<TeacherHomeView> {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
+        if (controller.isLoading.value) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+// ✅ إذا ما في بيانات أو فشل التحميل
+        if (controller.teacherRes == null) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text("واجهة المعلم"),
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    "فشل تحميل البيانات",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      controller.fetchTeacherData();
+                    },
+                    icon: const Icon(Icons.refresh),
+                    label: const Text("إعادة المحاولة"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4B70F5),
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
 
         return Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
             actions: [
-              IconButton(
-                  onPressed: () {
-                    // signOut();
-                  },
-                  icon: Icon(Icons.logout))
+              Obx(
+                () {
+                  final loggingOut = AuthManager.isLoggingOut.value;
+                  return IconButton(
+                    onPressed:
+                        loggingOut ? null : () => AuthManager.logoutSafely(),
+                    icon: loggingOut
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.logout),
+                    tooltip: 'تسجيل الخروج',
+                  );
+                },
+              ),
             ],
             title: Text(
               'teacherWelcome'.trParams({
@@ -130,7 +143,7 @@ class _TeacherHomeViewState extends State<TeacherHomeView> {
                     SizedBox(
                       height: 150,
                       child: PageView.builder(
-                        itemCount: controller.teacherRes!.sections.length,
+                        itemCount: controller.teacherRes?.sections.length ?? 0,
                         onPageChanged: (index) {
                           setState(() {
                             sliderPage = index;
@@ -214,12 +227,12 @@ class _TeacherHomeViewState extends State<TeacherHomeView> {
                         children: [
                           _buildActionItem(
                               Icons.edit_note, 'notes'.tr, '/teacher_note'),
+                          _buildActionItem(Icons.flag, 'Custom Questaion'.tr,
+                              '/Teacher_DictationsVies'),
+                          _buildActionItem(Icons.menu_book, 'exploration'.tr,
+                              '/TeacherExplorationView'),
                           _buildActionItem(
-                              Icons.flag, 'behavior'.tr, '/behavior'),
-                          _buildActionItem(
-                              Icons.menu_book, 'recitation'.tr, '/recite'),
-                          _buildActionItem(
-                              Icons.timer, 'attendance'.tr, '/attendance'),
+                              Icons.timer, 'exam'.tr, '/attendance'),
                         ],
                       ),
                     ),
